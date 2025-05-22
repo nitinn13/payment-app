@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(uuid())
+  name        String
+  email       String       @unique
+  password    String       
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  wallet      Wallet?
+  sentTxns    Transaction[] @relation("Sender")
+  receivedTxns Transaction[] @relation("Receiver")
+}
+
+model Wallet {
+  id          String   @id @default(uuid())
+  balance     Float    @default(0.0)
+  userId      String   @unique
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id            String     @id @default(uuid())
+  senderId      String?
+  receiverId    String?
+  amount        Float
+  status        TransactionStatus  // pending, success, failed
+  type          TransactionType    // wallet_transfer, razorpay_topup
+  description   String?
+  razorpayId    String?    // if done via Razorpay
+  createdAt     DateTime   @default(now())
+  sender        User?      @relation("Sender", fields: [senderId], references: [id])
+  receiver      User?      @relation("Receiver", fields: [receiverId], references: [id])
+}
+
+enum TransactionStatus {
+  pending
+  success
+  failed
+}
+
+enum TransactionType {
+  wallet_transfer
+  razorpay_topup
+}
