@@ -6,6 +6,11 @@ import userRouter from "./routes/user";
 const app = express();
 
 app.use(express.json());
+
+app.post("/test-body", (req, res) => {
+  console.log("Request Body:", req.body);
+  res.json({ received: req.body });
+});
 app.use("/user", userRouter);
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
