@@ -74,6 +74,12 @@ transactionRouter.get("/my-transactions", userMiddleware, async (req: Request, r
                     { receiverId: userId },
                 ],
             },
+            select: {
+                senderId : true,
+                receiverId : true,
+                amount: true,
+                createdAt : true
+            },
             orderBy: {
                 createdAt: 'desc' 
             }
@@ -100,6 +106,28 @@ transactionRouter.get("/my-transactions", userMiddleware, async (req: Request, r
 
         res.status(200).json({
             transactions: enhancedTransactions,
+        });
+    } catch (e) {
+        console.error("Transaction Error:", e);
+        res.status(500).json({ message: "Something went wrong" });
+    }
+});
+
+transactionRouter.get("/my-transactions/:id", userMiddleware, async (req: Request, res: Response) => {
+    try {
+        const { userId } = req;
+        const { id } = req.params;
+         const transaction = await prisma.transaction.findUnique({
+            where: {
+                id,
+                OR: [
+                    { senderId: userId },
+                    { receiverId: userId },
+                ],
+            },
+        });
+        res.status(200).json({
+            transaction
         });
     } catch (e) {
         console.error("Transaction Error:", e);

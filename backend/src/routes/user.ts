@@ -146,6 +146,34 @@ userRouter.get("/my-balance", userMiddleware, async (req: Request, res: Response
       message : "Something went wrong"
     })
   }
+});
+
+
+
+userRouter.get("/all-users", userMiddleware, async (req:Request, res:Response)=>{
+  try{
+    const users = await prisma.user.findMany({
+      select:{
+        name : true,
+        email : true
+      }
+    })
+
+    if(!users || users.length === 0){
+      return res.status(404).json({
+        message : "No users found"
+      })
+    }
+    res.status(200).json({
+      users
+    })
+  }
+  catch(e){
+    res.status(500).json({
+      message : "Something went wrong"
+    })
+  }
+
 })
 
 export default userRouter;
