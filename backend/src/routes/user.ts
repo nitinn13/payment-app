@@ -176,4 +176,34 @@ userRouter.get("/all-users", userMiddleware, async (req:Request, res:Response)=>
 
 })
 
+userRouter.get("/:id", userMiddleware, async (req:Request, res:Response)=>{
+  try{
+    const { id } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where : {
+        id 
+      },
+      select: {
+        name : true,
+        email : true
+      }
+    })
+
+    if(!user){
+      return res.status(404).json({
+        message : "User not found"
+      })
+    }
+    res.status(200).json({
+      user
+    })
+  }
+  catch(e){
+    res.status(500).json({
+      message : "Something went wrong"
+    })
+  }
+})
+
 export default userRouter;
