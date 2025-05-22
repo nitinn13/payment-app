@@ -123,5 +123,29 @@ userRouter.get("/me", userMiddleware, async (req: Request, res: Response) => {
         res.status(500).json({ message: "Something went wrong" });
     }
 });
+userRouter.get("/my-balance", userMiddleware, async (req: Request, res: Response)=>{
+  try{
+    const {userId} = req;
+    const balance = await prisma.wallet.findUnique({
+      where : { userId },
+      select :{
+        balance : true,
+      }
+    })
+    if(!balance){
+      return res.status(404).json({
+        message : "User balance not found"
+      })
+    }
+    res.status(200).json({
+      balance
+    })
+  }
+  catch(e){
+    res.status(500).json({
+      message : "Something went wrong"
+    })
+  }
+})
 
 export default userRouter;
