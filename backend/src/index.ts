@@ -2,6 +2,7 @@ import { prisma } from "./prisma";
 
 import express from "express";
 import userRouter from "./routes/user";
+import transactionRouter from "./routes/transaction";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.post("/test-body", (req, res) => {
   res.json({ received: req.body });
 });
 app.use("/user", userRouter);
+app.use("/transaction", transactionRouter);
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
