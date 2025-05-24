@@ -13,6 +13,7 @@ userRouter.post("/signup", async (req: Request, res: Response) => {
             name: z.string().min(1),
             email: z.string().email(),
             password: z.string().min(3),
+            username: z.string().min(3)
         });
 
         const result = schema.safeParse(req.body);
@@ -21,7 +22,7 @@ userRouter.post("/signup", async (req: Request, res: Response) => {
             return res.status(400).json({ message: "Invalid input" });
         }
 
-        const { name, email, password } = result.data;
+        const { name, email, password, username } = result.data;
 
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
@@ -29,12 +30,15 @@ userRouter.post("/signup", async (req: Request, res: Response) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
+        const upiId = username + "@upi";
 
         const newUser = await prisma.user.create({
             data: {
                 name,
                 email,
                 password: hashedPassword,
+                username,
+                upiId
             },
         });
 
@@ -109,7 +113,10 @@ userRouter.get("/me", userMiddleware, async (req: Request, res: Response) => {
             select: {
                 id: true,
                 name: true,
-                email: true
+                email: true,
+                username: true,
+                upiId: true,
+                createdAt: true
             }
         });
         if (!user) {
@@ -155,7 +162,7 @@ userRouter.get("/all-users", userMiddleware, async (req:Request, res:Response)=>
     const users = await prisma.user.findMany({
       select:{
         name : true,
-        email : true
+        upiId: true
       }
     })
 
@@ -186,7 +193,7 @@ userRouter.get("/:id", userMiddleware, async (req:Request, res:Response)=>{
       },
       select: {
         name : true,
-        email : true
+        upiId : true
       }
     })
 

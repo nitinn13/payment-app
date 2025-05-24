@@ -8,7 +8,7 @@ const transactionRouter: Router = Router();
 transactionRouter.post("/send", userMiddleware, async (req: Request, res: Response) => {
     try {
         const schema = z.object({
-            receiverId: z.string().uuid(),
+            receiverId: z.string().uuid(), // Expecting receiver's user ID
             amount: z.number().positive(),
             description: z.string().optional()
         });
@@ -36,6 +36,7 @@ transactionRouter.post("/send", userMiddleware, async (req: Request, res: Respon
         if (senderWallet.balance < amount) {
             return res.status(400).json({ message: "Insufficient balance" });
         }
+
         await prisma.$transaction([
             prisma.wallet.update({
                 where: { userId: senderId },
@@ -64,6 +65,80 @@ transactionRouter.post("/send", userMiddleware, async (req: Request, res: Respon
         res.status(500).json({ message: "Something went wrong" });
     }
 });
+
+transactionRouter.post("/send-upi-internal", userMiddleware, async (req: Request, res: Response) => {
+    try {
+        const schema = z.object({
+            receiverUpiId: z.string(), 
+            amount: z.number().positive(),
+            description: z.string().optional()
+        });
+
+        const result = schema.safeParse(req.body);
+        if (!result.success) {
+            return res.status(400).json({ message: "Invalid input" });
+        }
+
+        const { receiverUpiId, amount, description } = result.data;
+        const senderId = req.userId;
+
+        const receiverUser = await prisma.user.findFirst({
+            where: { upiId: receiverUpiId },
+            select: { id: true }
+        });
+
+        if (!receiverUser) {
+            return res.status(404).json({ message: "Recipient with this UPI ID not found on our platform" });
+        }
+
+        const receiverId = receiverUser.id;
+
+        if (senderId === receiverId) {
+            return res.status(400).json({ message: "Cannot send money to yourself" });
+        }
+
+        const [senderWallet, receiverWallet] = await Promise.all([
+            prisma.wallet.findUnique({ where: { userId: senderId } }),
+            prisma.wallet.findUnique({ where: { userId: receiverId } }),
+        ]);
+
+        if (!senderWallet || !receiverWallet) {
+            return res.status(404).json({ message: "Sender or receiver wallet not found" });
+        }
+
+        if (senderWallet.balance < amount) {
+            return res.status(400).json({ message: "Insufficient balance" });
+        }
+
+        await prisma.$transaction([
+            prisma.wallet.update({
+                where: { userId: senderId },
+                data: { balance: { decrement: amount } },
+            }),
+            prisma.wallet.update({
+                where: { userId: receiverId },
+                data: { balance: { increment: amount } },
+            }),
+            prisma.transaction.create({
+                data: {
+                    senderId,
+                    receiverId,
+                    amount,
+                    description,
+                    status: "success",
+                    type: "wallet_transfer", 
+                    receiverUpiId: receiverUpiId 
+                },
+            })
+        ]);
+
+        res.status(200).json({ message: "Money sent successfully (internal UPI)" });
+
+    } catch (e) {
+        console.error("Internal UPI Transfer Error:", e);
+        res.status(500).json({ message: "Something went wrong during internal UPI transfer" });
+    }
+});
 transactionRouter.get("/my-transactions", userMiddleware, async (req: Request, res: Response) => {
     try {
         const { userId } = req;
@@ -77,8 +152,9 @@ transactionRouter.get("/my-transactions", userMiddleware, async (req: Request, r
             select: {
                 senderId : true,
                 receiverId : true,
-                amount: true,
-                createdAt : true
+                amount : true,
+                createdAt : true,
+                receiverUpiId : true
             },
             orderBy: {
                 createdAt: 'desc' 
