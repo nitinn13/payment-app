@@ -162,7 +162,8 @@ userRouter.get("/all-users", userMiddleware, async (req:Request, res:Response)=>
     const users = await prisma.user.findMany({
       select:{
         name : true,
-        upiId: true
+        upiId: true,
+        id: true
       }
     })
 

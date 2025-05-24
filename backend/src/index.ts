@@ -1,11 +1,11 @@
 import { prisma } from "./prisma"; 
-
+import cors from "cors";
 import express from "express";
 import userRouter from "./routes/user";
 import transactionRouter from "./routes/transaction";
 
 const app = express();
-
+app.use(cors());
 app.use(express.json());
 
 app.post("/test-body", (req, res) => {
