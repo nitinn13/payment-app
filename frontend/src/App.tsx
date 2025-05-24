@@ -4,6 +4,8 @@ import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Send from './pages/Send';
+import Profile from './pages/Profile';
+import Transactions from './pages/Transactions';
 
 
 const App = () => {
@@ -17,6 +19,9 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/send" element={<Send />} />
+          <Route path="/me" element={<Profile />} />
+          <Route path="/My-transactions" element={<Transactions />} />
+          <Route path="/send-money" element={<Send/>} />
 
         </Routes>
       </BrowserRouter>

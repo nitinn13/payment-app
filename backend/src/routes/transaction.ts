@@ -154,7 +154,8 @@ transactionRouter.get("/my-transactions", userMiddleware, async (req: Request, r
                 receiverId : true,
                 amount : true,
                 createdAt : true,
-                receiverUpiId : true
+                receiverUpiId : true,
+                id: true
             },
             orderBy: {
                 createdAt: 'desc' 

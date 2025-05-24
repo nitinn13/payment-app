@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Balance from '../components/Balance';
 
 const Dashboard = () => {
@@ -27,6 +28,10 @@ const Dashboard = () => {
       <Balance />
       <div className='flex flex-col m-3 gap-6'>
         <div className='text-md '>Dashboard</div>
+        <Link to="/me">Your profile </Link>
+        <Link to="/login" onClick={() => localStorage.removeItem('token')}>Logout</Link>
+        <Link to="/My-transactions">My-transactions</Link>
+        <Link to="/send-money">Send money</Link>
 
         <input type="text" placeholder='search' className='w-full px-2 py-1' />
         {users.map(user => (
