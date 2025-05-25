@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Send from './pages/Send';
 import Profile from './pages/Profile';
 import Transactions from './pages/Transactions';
+import LandingPage from './pages/LandingPage';
 
 
 const App = () => {
@@ -15,12 +16,13 @@ const App = () => {
       <BrowserRouter>
 
         <Routes>
+          <Route path="/" element={< LandingPage/>} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/send" element={<Send />} />
           <Route path="/me" element={<Profile />} />
-          <Route path="/My-transactions" element={<Transactions />} />
+          <Route path="/transactions" element={<Transactions />} />
           <Route path="/send-money" element={<Send/>} />
 
         </Routes>
