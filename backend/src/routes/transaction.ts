@@ -109,8 +109,11 @@ transactionRouter.post("/send-upi-internal", userMiddleware, async (req: Request
         if (senderWallet.balance < amount) {
             return res.status(400).json({ message: "Insufficient balance" });
         }
-
-        await prisma.$transaction([
+        const senderUpiId = await prisma.user.findUnique({
+            where: { id: senderId },
+            select: { upiId: true }
+        });
+        const [_, __, newTransaction] = await prisma.$transaction([
             prisma.wallet.update({
                 where: { userId: senderId },
                 data: { balance: { decrement: amount } },
@@ -123,16 +126,19 @@ transactionRouter.post("/send-upi-internal", userMiddleware, async (req: Request
                 data: {
                     senderId,
                     receiverId,
+                    senderUpiId : senderUpiId?.upiId,
                     amount,
                     description,
                     status: "success",
-                    type: "wallet_transfer", 
-                    receiverUpiId: receiverUpiId 
+                    type: "wallet_transfer",
+                    receiverUpiId: receiverUpiId
                 },
+                select: { id: true }
             })
         ]);
 
-        res.status(200).json({ message: "Money sent successfully (internal UPI)" });
+        res.status(200).json({ message: "Money sent successfully (internal UPI)", transactionId: newTransaction.id });
+
 
     } catch (e) {
         console.error("Internal UPI Transfer Error:", e);
@@ -155,6 +161,7 @@ transactionRouter.get("/my-transactions", userMiddleware, async (req: Request, r
                 amount : true,
                 createdAt : true,
                 receiverUpiId : true,
+                senderUpiId : true,
                 id: true
             },
             orderBy: {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,23 +9,35 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
+  const passwordInputRef = useRef(null);
+  const loginButtonRef = useRef(null);
+
   const handleLogin = async () => {
     setIsLoading(true);
     try {
-
       const response = await axios.post('http://localhost:3000/user/login', {
         email,
         password
       });
       localStorage.setItem('token', response.data.token);
       navigate("/dashboard");
-
-      
     } catch (error) {
       console.error('Login failed:', error);
       alert('Login failed. Please check your credentials.');
     }
     setIsLoading(false);
+  };
+
+  const handleEmailKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      passwordInputRef.current.focus();
+    }
+  };
+
+  const handlePasswordKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      loginButtonRef.current.click();
+    }
   };
 
   return (
@@ -38,9 +50,9 @@ const Login = () => {
       {/* Header */}
       <nav className="flex justify-between items-center px-8 py-6">
         <button
-        onClick={() => navigate('/')}
-         className="text-2xl font-bold text-purple-600">PayFlow</button>
-        
+          onClick={() => navigate('/')}
+          className="text-2xl font-bold text-purple-600">PayFlow</button>
+
       </nav>
 
       {/* Main Content */}
@@ -68,6 +80,7 @@ const Login = () => {
                       value={email}
                       placeholder="Enter your email"
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      onKeyDown={handleEmailKeyDown}
                     />
                     {/* Email icon */}
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -88,6 +101,8 @@ const Login = () => {
                       value={password}
                       placeholder="Enter your password"
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none transition-all duration-200 bg-white/50 backdrop-blur-sm pr-12"
+                      onKeyDown={handlePasswordKeyDown}
+                      ref={passwordInputRef}
                     />
                     {/* Password toggle button */}
                     <button
@@ -125,6 +140,7 @@ const Login = () => {
                   onClick={handleLogin}
                   disabled={isLoading || !email || !password}
                   className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  ref={loginButtonRef}
                 >
                   {isLoading ? (
                     <>
@@ -175,8 +191,8 @@ const Login = () => {
                   <p className="text-sm text-gray-600">
                     Don't have an account?
                     <button
-                    onClick={() => navigate('/signup')}
-                    className="text-purple-600 hover:text-purple-700 font-medium ml-1 transition-colors">
+                      onClick={() => navigate('/signup')}
+                      className="text-purple-600 hover:text-purple-700 font-medium ml-1 transition-colors">
                       Sign up
                     </button>
                   </p>
@@ -195,7 +211,7 @@ const Login = () => {
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span>256-bit Encryption</span>
             </div>
-            
+
           </div>
         </div>
       </div>
