@@ -6,7 +6,7 @@ const Balance = () => {
 
     useEffect(() => {
         const getBalance = async () => {
-            const response = await fetch('http://localhost:3000/user/my-balance',
+            const response = await fetch('https://localhost:https://payment-app-backend-dulq.onrender.com/user/my-balance',
                 {
                     method: 'GET',
                     headers: {

@@ -15,7 +15,7 @@ const Contacts = () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await fetch('http://localhost:3000/user/all-users', {
+                const response = await fetch('https://payment-app-backend-dulq.onrender.com/user/all-users', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

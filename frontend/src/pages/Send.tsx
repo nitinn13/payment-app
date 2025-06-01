@@ -60,7 +60,7 @@ const SendMoney = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/transaction/send-upi-internal', {
+      const response = await fetch('https://payment-app-backend-dulq.onrender.com/transaction/send-upi-internal', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

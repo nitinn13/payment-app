@@ -1,6 +1,6 @@
 const getUsers = async () => {
     try {
-      const response = await fetch('http://localhost:3000/user/all-users', {
+      const response = await fetch('https://payment-app-backend-dulq.onrender.com/user/all-users', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -17,7 +17,7 @@ const getUsers = async () => {
   };
   const getTransactions = async () => {
     try {
-      const response = await fetch('http://localhost:3000/transaction/my-transactions', {
+      const response = await fetch('https://payment-app-backend-dulq.onrender.com/transaction/my-transactions', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -34,7 +34,7 @@ const getUsers = async () => {
   };
   const getBalance = async () => {
     try {
-      const response = await fetch('http://localhost:3000/user/my-balance', {
+      const response = await fetch('https://payment-app-backend-dulq.onrender.com/user/my-balance', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ const getUsers = async () => {
   };
   const mydetails = async () => {
     try {
-      const response = await fetch('http://localhost:3000/user/me', {
+      const response = await fetch('https://payment-app-backend-dulq.onrender.com/user/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

@@ -16,7 +16,7 @@ const TransactionDetailsPage = () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await fetch(`http://localhost:3000/transaction/my-transactions/${id}`,
+                const response = await fetch(`https://payment-app-backend-dulq.onrender.com/transaction/my-transactions/${id}`,
                     {
                         method: 'GET',
                         headers: {

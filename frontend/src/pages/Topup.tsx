@@ -27,7 +27,7 @@ const TopUp: React.FC<TopUpProps> = ({ onTopUpSuccess }) => {
 
     try {
       // 1. Create Razorpay order
-      const orderResponse = await axios.post('http://localhost:3000/transaction/create-razorpay-order', { amount }, {
+      const orderResponse = await axios.post('https://payment-app-backend-dulq.onrender.com/transaction/create-razorpay-order', { amount }, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

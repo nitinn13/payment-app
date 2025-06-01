@@ -38,7 +38,7 @@ const Header = ({
     useEffect(() => {
         const getData = async () => {
             try {
-                const response = await fetch('http://localhost:3000/user/me',
+                const response = await fetch('https://payment-app-backend-dulq.onrender.com/user/me',
                     {
                         method: 'GET',
                         headers: {

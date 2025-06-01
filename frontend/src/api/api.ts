@@ -1,6 +1,6 @@
 import axios from 'axios'; // Using axios for cleaner syntax and error handling
 
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = 'https://payment-app-backend-dulq.onrender.com';
 
 const getAuthHeader = () => ({
   'Content-Type': 'application/json',

@@ -14,7 +14,7 @@ const Transactions = () => {
         const getData = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('http://localhost:3000/transaction/my-transactions', {
+                const response = await fetch('https://payment-app-backend-dulq.onrender.com/transaction/my-transactions', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

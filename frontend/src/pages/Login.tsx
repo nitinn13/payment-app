@@ -18,7 +18,7 @@ const Login = () => {
     setErrors({ email: '', password: '' }); // Clear previous errors
     
     try {
-      const response = await axios.post('http://localhost:3000/user/login', {
+      const response = await axios.post('https://payment-app-backend-dulq.onrender.com/user/login', {
         email,
         password
       });
