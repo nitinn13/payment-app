@@ -6,17 +6,7 @@ const Profile = () => {
     const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
-        // Simulating API call with mock data since we can't use localStorage
-        // const mockData = {
-        //     name: "Nitin Jha",
-        //     upiId: "nitin13@upi",
-        //     email: "nitin.jha@example.com",
-        //     username: "nitinjha",
-        //     createdAt: "2024-01-15T10:30:00Z"
-        // };
-        // setData(mockData);
         
-        // Original API call (commented out since localStorage isn't available)
         
         const getData = async () => {
             const response = await fetch('http://localhost:3000/user/me',

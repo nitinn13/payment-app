@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, Settings, User, LogOut, ChevronDown, Search, Menu, X, Home, CreditCard, TrendingUp, Users, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const Header = ({ 
+const Header = ({
     currentPage = "Dashboard",
-    userName = "Nitin Jha",
-    userEmail = "nitin.jha@example.com",
     notificationCount = 3,
     showSearch = true,
     showMobileMenu = false,
     onMobileMenuToggle = () => {}
 }) => {
     const navigate = useNavigate();
+    const [data, setData] = useState({});
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -33,8 +32,41 @@ const Header = ({
     }
 
     const getInitials = (name) => {
-        return name.split(' ').map(n => n[0]).join('').toUpperCase();
+        return name?.split(' ').map(n => n[0]).join('').toUpperCase();
     };
+
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/user/me',
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${localStorage.getItem('token')}`
+                        }
+                    }
+                );
+                if (!response.ok) {
+                    // Handle error cases, e.g., redirect to login if unauthorized
+                    console.error('Failed to fetch user data:', response.status);
+                    if (response.status === 401) {
+                        onLogout();
+                    }
+                    return;
+                }
+                const responseData = await response.json();
+                console.log(responseData);
+                setData(responseData.user);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        }
+        getData();
+    }, [onLogout]);
+
+    const userName = data?.name;
+    const userEmail = data?.email;
 
     return (
         <>
@@ -197,7 +229,7 @@ const Header = ({
                                                     <User size={18} />
                                                     <span>Profile Settings</span>
                                                 </button>
-                                                
+
                                                 <button className="flex items-center gap-3 p-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
                                                     <HelpCircle size={18} />
                                                     <span>Help & Support</span>
@@ -254,7 +286,7 @@ const Header = ({
                                 );
                             })}
                         </div>
-                        
+
                         {/* Mobile Search */}
                         {showSearch && (
                             <div className="px-4 pb-4">

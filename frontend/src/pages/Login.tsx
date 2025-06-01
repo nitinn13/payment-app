@@ -7,6 +7,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({ email: '', password: '' });
   const navigate = useNavigate();
 
   const passwordInputRef = useRef(null);
@@ -14,6 +15,8 @@ const Login = () => {
 
   const handleLogin = async () => {
     setIsLoading(true);
+    setErrors({ email: '', password: '' }); // Clear previous errors
+    
     try {
       const response = await axios.post('http://localhost:3000/user/login', {
         email,
@@ -23,9 +26,25 @@ const Login = () => {
       navigate("/dashboard");
     } catch (error) {
       console.error('Login failed:', error);
-      alert('Login failed. Please check your credentials.');
+      if (error.response && error.response.status === 401) {
+        setErrors({
+          email: 'Invalid email or password',
+          password: 'Invalid email or password'
+        });
+      } else {
+        setErrors({
+          email: 'Login failed. Please try again.',
+          password: 'Login failed. Please try again.'
+        });
+      }
     }
     setIsLoading(false);
+  };
+
+  const handleDemoLogin = () => {
+    setEmail("nitin@gmail.com");
+    setPassword("pass");
+    setErrors({ email: '', password: '' }); // Clear errors when using demo
   };
 
   const handleEmailKeyDown = (event) => {
@@ -52,7 +71,6 @@ const Login = () => {
         <button
           onClick={() => navigate('/')}
           className="text-2xl font-bold text-purple-600">PayFlow</button>
-
       </nav>
 
       {/* Main Content */}
@@ -71,15 +89,18 @@ const Login = () => {
 
               <div className="space-y-6">
                 {/* Email Input */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <label className="text-sm font-medium text-gray-700 block">Email Address</label>
                   <div className="relative">
                     <input
-                      onChange={e => setEmail(e.target.value)}
+                      onChange={e => {
+                        setEmail(e.target.value);
+                        setErrors({ ...errors, email: '' }); // Clear error when typing
+                      }}
                       type="email"
                       value={email}
                       placeholder="Enter your email"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      className={`w-full px-4 py-3 rounded-xl border ${errors.email ? 'border-red-400' : 'border-gray-200'} focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none transition-all duration-200 bg-white/50 backdrop-blur-sm`}
                       onKeyDown={handleEmailKeyDown}
                     />
                     {/* Email icon */}
@@ -89,18 +110,29 @@ const Login = () => {
                       </svg>
                     </div>
                   </div>
+                  {errors.email && (
+                    <p className="text-red-500 text-xs mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {errors.email}
+                    </p>
+                  )}
                 </div>
 
                 {/* Password Input */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <label className="text-sm font-medium text-gray-700 block">Password</label>
                   <div className="relative">
                     <input
-                      onChange={e => setPassword(e.target.value)}
+                      onChange={e => {
+                        setPassword(e.target.value);
+                        setErrors({ ...errors, password: '' }); // Clear error when typing
+                      }}
                       type={showPassword ? "text" : "password"}
                       value={password}
                       placeholder="Enter your password"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none transition-all duration-200 bg-white/50 backdrop-blur-sm pr-12"
+                      className={`w-full px-4 py-3 rounded-xl border ${errors.password ? 'border-red-400' : 'border-gray-200'} focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none transition-all duration-200 bg-white/50 backdrop-blur-sm pr-12`}
                       onKeyDown={handlePasswordKeyDown}
                       ref={passwordInputRef}
                     />
@@ -122,6 +154,14 @@ const Login = () => {
                       )}
                     </button>
                   </div>
+                  {errors.password && (
+                    <p className="text-red-500 text-xs mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {errors.password}
+                    </p>
+                  )}
                 </div>
 
                 {/* Remember me and Forgot password */}
@@ -155,6 +195,14 @@ const Login = () => {
                       </svg>
                     </>
                   )}
+                </button>
+
+                {/* Demo Login Button */}
+                <button
+                  onClick={handleDemoLogin}
+                  className="w-full bg-gray-500 hover:from-gray-600 hover:to-gray-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] flex items-center justify-center space-x-2"
+                >
+                  <span>Demo Login</span>
                 </button>
 
                 {/* Divider */}
@@ -211,7 +259,6 @@ const Login = () => {
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span>256-bit Encryption</span>
             </div>
-
           </div>
         </div>
       </div>
