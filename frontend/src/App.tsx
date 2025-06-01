@@ -8,6 +8,8 @@ import Profile from './pages/Profile';
 import Transactions from './pages/Transactions';
 import LandingPage from './pages/LandingPage';
 import TransactionDetailsPage from './pages/TransactionDetailsPage';
+import Contacts from './pages/Contacts';
+import TopUp from './pages/Topup';
 
 
 const App = () => {
@@ -25,8 +27,9 @@ const App = () => {
           <Route path="/me" element={<Profile />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/transactions/my-transactions/:id" element={<TransactionDetailsPage />} />
-
+          <Route path="/contacts" element={<Contacts />} />
           <Route path="/send-money" element={<Send />} />
+          <Route path="/topup" element={<TopUp/>} />
 
         </Routes>
       </BrowserRouter>

@@ -161,7 +161,9 @@ const TransactionDetailsPage = () => {
                         <h2 className="text-xl font-semibold text-gray-900 mb-2">Transaction Not Found</h2>
                         <p className="text-gray-600 mb-6">The requested transaction could not be located.</p>
                         <button
-                            onClick={() => window.history.back()}
+                            onClick={() => {
+                              navigate(`/dashboard/`);
+                            }}
                             className="bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors"
                         >
                             Go Back
@@ -183,7 +185,9 @@ const TransactionDetailsPage = () => {
                 <div className="max-w-4xl mx-auto">
                     <div className="flex items-center space-x-4 mb-6">
                         <button
-                            onClick={() => window.history.back()}
+                            onClick={() => {
+                              navigate(`/dashboard/`);
+                            }}
                             className="bg-white/10 backdrop-blur-sm text-white p-2 rounded-lg hover:bg-white/20 transition-colors"
                         >
                             <ArrowLeft className="w-6 h-6" />

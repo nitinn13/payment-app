@@ -35,7 +35,7 @@ const PayFlowApp = () => {
   const [user, setUser] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [transactions] = useState([
-    { id: 1, type: 'sent', amount: 1500, to: 'john@upi', date: '2024-05-24', status: 'completed' },
+    { id: 1, type: 'sent', amount: 1500, to: 'nitin@upi', date: '2024-05-24', status: 'completed' },
     { id: 2, type: 'received', amount: 2300, from: 'sarah@upi', date: '2024-05-23', status: 'completed' },
     { id: 3, type: 'sent', amount: 800, to: 'mike@upi', date: '2024-05-22', status: 'pending' },
     { id: 4, type: 'received', amount: 4200, from: 'company@upi', date: '2024-05-21', status: 'completed' }
@@ -174,7 +174,7 @@ const PayFlowApp = () => {
                         J
                       </div>
                       <div>
-                        <div className="font-semibold text-gray-800">john@upi</div>
+                        <div className="font-semibold text-gray-800">nitin@upi</div>
                         <div className="text-sm text-gray-500">Last sent: ₹2,500</div>
                       </div>
                     </div>

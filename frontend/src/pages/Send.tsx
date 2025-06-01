@@ -7,12 +7,12 @@ const SendMoney = () => {
   const [upiId, setUpiId] = useState("");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState(1); // 1: form, 2: confirmation, 3: success
+  const [step, setStep] = useState(1); 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState([]);
-  const [transactionId, setTransactionId] = useState(""); // Added to store transaction ID
+  const [transactionId, setTransactionId] = useState(""); 
   const navigate = useNavigate();
 
   const quickAmounts = [50, 100, 200, 500, 1000];

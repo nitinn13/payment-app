@@ -232,6 +232,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
       <Header/>
 
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section & Balance */}
         <div className="mb-8">
@@ -267,6 +268,9 @@ const Dashboard = () => {
                     {balanceVisible ? `$${balance.toLocaleString()}` : '••••••••'}
                   </h3>
                   <p className="text-purple-200 text-sm mt-1">Available to spend</p>
+                  <button
+                    onClick={() => navigate('/topup')}
+                  >Top Up</button>
                 </div>
                 
                 <div className="text-right">
@@ -347,7 +351,7 @@ const Dashboard = () => {
                           {
                             transaction.transactionType === 'sent' ? 
                               <p className="font-semibold text-gray-900">{transaction.receiverUpiId}</p> :
-                              <p className="font-semibold text-gray-900">{transaction.senderId}</p>
+                              <p className="font-semibold text-gray-900">{transaction.senderUpiId}</p>
                           }
                           <div className="flex items-center space-x-2 mt-1">
                             <p className="text-sm text-gray-500">{transaction.category}</p>

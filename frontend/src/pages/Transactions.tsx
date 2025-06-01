@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUpRight, ArrowDownLeft, Search, Filter, Calendar, Download, MoreHorizontal, Eye } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, ArrowLeft, Search, Filter, Calendar, Download, MoreHorizontal, Eye, Headset } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
 
 const Transactions = () => {
     const [data, setData] = useState([]);
@@ -7,7 +9,7 @@ const Transactions = () => {
     const [filterType, setFilterType] = useState('all');
     const [dateRange, setDateRange] = useState('all');
     const [loading, setLoading] = useState(true);
-
+    const navigate = useNavigate();
     useEffect(() => {
         const getData = async () => {
             try {
@@ -54,8 +56,8 @@ const Transactions = () => {
     };
 
     const getTransactionIcon = (type) => {
-        return type === 'received' ? 
-            <ArrowDownLeft className="w-4 h-4 text-green-600" /> : 
+        return type === 'received' ?
+            <ArrowDownLeft className="w-4 h-4 text-green-600" /> :
             <ArrowUpRight className="w-4 h-4 text-red-600" />;
     };
 
@@ -68,26 +70,26 @@ const Transactions = () => {
     };
 
     const filteredTransactions = data.filter(transaction => {
-        const matchesSearch = 
-            transaction.receiverUpiId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        const matchesSearch =
+            (transaction.receiverUpiId && transaction.receiverUpiId.toLowerCase().includes(searchTerm.toLowerCase())) ||
             (transaction.senderUpiId && transaction.senderUpiId.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            transaction.id.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        const matchesFilter = filterType === 'all' || 
-                           (filterType === 'sent' && transaction.transactionType === 'sent') || 
-                           (filterType === 'received' && transaction.transactionType === 'received');
-        
+            (transaction.id && transaction.id.toLowerCase().includes(searchTerm.toLowerCase()));
+
+        const matchesFilter = filterType === 'all' ||
+            (filterType === 'sent' && transaction.transactionType === 'sent') ||
+            (filterType === 'received' && transaction.transactionType === 'received');
+
         return matchesSearch && matchesFilter;
     });
 
     const totalReceived = data
         .filter(t => t.transactionType === 'received')
         .reduce((sum, t) => sum + t.amount, 0);
-    
+
     const totalSent = data
         .filter(t => t.transactionType === 'sent')
         .reduce((sum, t) => sum + t.amount, 0);
-    
+
     const netBalance = totalReceived - totalSent;
 
     if (loading) {
@@ -117,13 +119,26 @@ const Transactions = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            <Header/>
             {/* Header Section */}
             <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 px-8 py-12">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                         <div className="text-white mb-6 md:mb-0">
-                            <h1 className="text-4xl font-bold mb-2">Transaction History</h1>
-                            <p className="text-purple-100 text-lg">Complete overview of your financial activities</p>
+                            <div className="flex items-center space-x-4 mb-6">
+                                <button
+                                    onClick={() => {
+                                        navigate(`/dashboard/`);
+                                    }}
+                                    className="bg-white/10 backdrop-blur-sm text-white p-2 rounded-lg hover:bg-white/20 transition-colors"
+                                >
+                                    <ArrowLeft className="w-6 h-6" />
+                                </button>
+                                <div>
+                                    <h1 className="text-3xl font-bold text-white">Transaction History</h1>
+                                    <p className="text-purple-100 mt-1">Complete overview of your financial activities</p>
+                                </div>
+                            </div>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-3">
                             <button className="bg-white/10 backdrop-blur-sm text-white px-6 py-3 rounded-lg font-medium hover:bg-white/20 transition-all duration-200 flex items-center justify-center">
@@ -141,7 +156,7 @@ const Transactions = () => {
 
             <div className="max-w-7xl mx-auto px-8 -mt-8">
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 ">
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                         <div className="flex items-center justify-between mb-4">
                             <div className="text-sm font-medium text-gray-600 uppercase tracking-wide">Total Received</div>
@@ -175,17 +190,14 @@ const Transactions = () => {
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                         <div className="flex items-center justify-between mb-4">
                             <div className="text-sm font-medium text-gray-600 uppercase tracking-wide">Net Balance</div>
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                netBalance >= 0 ? 'bg-blue-100' : 'bg-orange-100'
-                            }`}>
-                                <div className={`w-3 h-3 rounded-full ${
-                                    netBalance >= 0 ? 'bg-blue-600' : 'bg-orange-600'
-                                }`}></div>
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${netBalance >= 0 ? 'bg-blue-100' : 'bg-orange-100'
+                                }`}>
+                                <div className={`w-3 h-3 rounded-full ${netBalance >= 0 ? 'bg-blue-600' : 'bg-orange-600'
+                                    }`}></div>
                             </div>
                         </div>
-                        <div className={`text-2xl font-bold ${
-                            netBalance >= 0 ? 'text-blue-600' : 'text-orange-600'
-                        }`}>
+                        <div className={`text-2xl font-bold ${netBalance >= 0 ? 'text-blue-600' : 'text-orange-600'
+                            }`}>
                             {netBalance >= 0 ? '+' : ''}₹{Math.abs(netBalance).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </div>
                         <div className="text-sm text-gray-500 font-medium mt-1">
@@ -280,14 +292,17 @@ const Transactions = () => {
                                         <th className="text-center py-4 px-6 text-sm font-semibold text-gray-600 uppercase tracking-wide">Details</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
+                                <tbody className="divide-y divide-gray-100 ">
                                     {filteredTransactions.map((transaction) => (
-                                        <tr key={transaction.id} className="hover:bg-gray-50 transition-colors duration-150">
+                                        <tr key={transaction.id}
+                                            onClick={() => {
+                                                navigate(`/transactions/my-transactions/${transaction.id}`);
+                                            }}
+                                            className="hover:bg-gray-50 transition-colors duration-150 ">
                                             <td className="py-4 px-6">
                                                 <div className="flex items-center space-x-4">
-                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                                                        transaction.transactionType === 'received' ? 'bg-green-100' : 'bg-red-100'
-                                                    }`}>
+                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${transaction.transactionType === 'received' ? 'bg-green-100' : 'bg-red-100'
+                                                        }`}>
                                                         {getTransactionIcon(transaction.transactionType)}
                                                     </div>
                                                     <div>
@@ -301,11 +316,10 @@ const Transactions = () => {
                                                 </div>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                                                    transaction.transactionType === 'received'
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-red-100 text-red-800'
-                                                }`}>
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${transaction.transactionType === 'received'
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-red-100 text-red-800'
+                                                    }`}>
                                                     {transaction.transactionType === 'received' ? (
                                                         <ArrowDownLeft className="w-3 h-3 mr-1" />
                                                     ) : (
@@ -325,11 +339,10 @@ const Transactions = () => {
                                                 </div>
                                             </td>
                                             <td className="py-4 px-6 text-right">
-                                                <div className={`text-lg font-bold ${
-                                                    transaction.transactionType === 'received' 
-                                                        ? 'text-green-600' 
-                                                        : 'text-red-600'
-                                                }`}>
+                                                <div className={`text-lg font-bold ${transaction.transactionType === 'received'
+                                                    ? 'text-green-600'
+                                                    : 'text-red-600'
+                                                    }`}>
                                                     {formatAmount(transaction.amount, transaction.transactionType)}
                                                 </div>
                                             </td>

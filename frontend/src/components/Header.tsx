@@ -25,9 +25,7 @@ const Header = ({
     const navItems = [
         { name: 'Dashboard', icon: Home, href: '/dashboard' },
         { name: 'Transactions', icon: CreditCard, href: '/transactions' },
-        { name: 'Analytics', icon: TrendingUp, href: '/analytics' },
         { name: 'Contacts', icon: Users, href: '/contacts' },
-        { name: 'Help', icon: HelpCircle, href: '/help' }
     ];
     const onLogout = () => {
         localStorage.removeItem('token');
