@@ -1,34 +1,37 @@
-# 💸 Wallet App
+# 💸 Wallet App – Full-Stack Digital Wallet Application
 
-A full-stack digital wallet application that allows users to sign up, log in, view their balance, send money to others, and track transactions — built with React, Tailwind CSS, Node.js, Express, Prisma, and PostgreSQL.
+A secure and scalable full-stack digital wallet application that allows users to sign up, log in, view their balance, send money to other users, and view their transaction history. Users can also **top up their account balance** using Razorpay.
 
 ---
 
 ## 🚀 Features
 
-- 🔐 User authentication (signup/login with hashed passwords)
-- 👤 View your profile and balance
-- 💳 Send money to other users
-- 📜 View transaction history and specific transaction details
-- 🧾 API built with RESTful standards
+- 🔐 **User Authentication** – Signup/Login with hashed passwords and JWT-based auth
+- 👤 **User Profile** – View personal info and current wallet balance
+- 💳 **Peer-to-Peer Transfers** – Instantly send money to other registered users
+- 💸 **Wallet Top-Up** – Add money to your wallet securely using **Razorpay**
+- 📜 **Transaction History** – Track all transactions with timestamps and full details
+- 📄 **Detailed Transaction View** – View metadata for each transaction
+- 🧾 **RESTful API** – Clean, secure endpoints following RESTful conventions
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **React**
-- **Tailwind CSS**
+### 🧑‍💻 Frontend
+- [React.js](https://reactjs.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
 
-### Backend
-- **Node.js**
-- **Express.js**
+### 🖥️ Backend
+- [Node.js](https://nodejs.org/)
+- [Express.js](https://expressjs.com/)
 
-### Database & ORM
-- **PostgreSQL**
-- **Prisma ORM**
+### 🗃️ Database & ORM
+- [PostgreSQL](https://www.postgresql.org/)
+- [Prisma ORM](https://www.prisma.io/)
+
+### 💳 Payment Integration
+- [Razorpay Payment Gateway](https://razorpay.com/)
 
 ---
-
-
 
