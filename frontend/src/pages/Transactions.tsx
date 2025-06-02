@@ -1,15 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowUpRight, ArrowDownLeft, ArrowLeft, Search, Filter, Calendar, Download, MoreHorizontal, Eye, Headset } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowUpRight, ArrowDownLeft, ArrowLeft, Search, Filter, Download, MoreHorizontal, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 
+interface Transaction {
+    id: string;
+    amount: number;
+    transactionType: 'sent' | 'received';
+    createdAt: string;
+    receiverUpiId?: string;
+    senderUpiId?: string;
+    [key: string]: any;
+}
+
 const Transactions = () => {
-    const [data, setData] = useState([]);
+    const [data, setData] = useState<Transaction[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterType, setFilterType] = useState('all');
-    const [dateRange, setDateRange] = useState('all');
+    const [filterType, setFilterType] = useState<'all' | 'sent' | 'received'>('all');
+    const [dateRange, setDateRange] = useState<string>('all');
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+
     useEffect(() => {
         const getData = async () => {
             try {
@@ -18,7 +29,7 @@ const Transactions = () => {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                        Authorization: `Bearer ${localStorage.getItem('token') || ''}`
                     }
                 });
                 const result = await response.json();
@@ -32,7 +43,7 @@ const Transactions = () => {
         getData();
     }, []);
 
-    const formatDate = (dateString) => {
+    const formatDate = (dateString: string): string => {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-IN', {
             day: '2-digit',
@@ -41,7 +52,7 @@ const Transactions = () => {
         });
     };
 
-    const formatTime = (dateString) => {
+    const formatTime = (dateString: string): string => {
         const date = new Date(dateString);
         return date.toLocaleTimeString('en-IN', {
             hour: '2-digit',
@@ -50,22 +61,22 @@ const Transactions = () => {
         });
     };
 
-    const formatAmount = (amount, type) => {
+    const formatAmount = (amount: number, type: string): string => {
         const formatted = `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
         return type === 'received' ? `+${formatted}` : `-${formatted}`;
     };
 
-    const getTransactionIcon = (type) => {
+    const getTransactionIcon = (type: string) => {
         return type === 'received' ?
             <ArrowDownLeft className="w-4 h-4 text-green-600" /> :
             <ArrowUpRight className="w-4 h-4 text-red-600" />;
     };
 
-    const getTransactionDescription = (transaction) => {
+    const getTransactionDescription = (transaction: Transaction): string => {
         if (transaction.transactionType === 'received') {
             return `Received from ${transaction.senderUpiId || 'unknown'}`;
         } else {
-            return `Sent to ${transaction.receiverUpiId}`;
+            return `Sent to ${transaction.receiverUpiId || 'unknown'}`;
         }
     };
 
@@ -190,14 +201,11 @@ const Transactions = () => {
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                         <div className="flex items-center justify-between mb-4">
                             <div className="text-sm font-medium text-gray-600 uppercase tracking-wide">Net Balance</div>
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${netBalance >= 0 ? 'bg-blue-100' : 'bg-orange-100'
-                                }`}>
-                                <div className={`w-3 h-3 rounded-full ${netBalance >= 0 ? 'bg-blue-600' : 'bg-orange-600'
-                                    }`}></div>
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${netBalance >= 0 ? 'bg-blue-100' : 'bg-orange-100'}`}>
+                                <div className={`w-3 h-3 rounded-full ${netBalance >= 0 ? 'bg-blue-600' : 'bg-orange-600'}`}></div>
                             </div>
                         </div>
-                        <div className={`text-2xl font-bold ${netBalance >= 0 ? 'text-blue-600' : 'text-orange-600'
-                            }`}>
+                        <div className={`text-2xl font-bold ${netBalance >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
                             {netBalance >= 0 ? '+' : ''}₹{Math.abs(netBalance).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </div>
                         <div className="text-sm text-gray-500 font-medium mt-1">
@@ -236,7 +244,7 @@ const Transactions = () => {
                             <div className="flex gap-3">
                                 <select
                                     value={filterType}
-                                    onChange={(e) => setFilterType(e.target.value)}
+                                    onChange={(e) => setFilterType(e.target.value as 'all' | 'sent' | 'received')}
                                     className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-sm font-medium"
                                 >
                                     <option value="all">All Types</option>
@@ -298,11 +306,10 @@ const Transactions = () => {
                                             onClick={() => {
                                                 navigate(`/transactions/my-transactions/${transaction.id}`);
                                             }}
-                                            className="hover:bg-gray-50 transition-colors duration-150 ">
+                                            className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer">
                                             <td className="py-4 px-6">
                                                 <div className="flex items-center space-x-4">
-                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${transaction.transactionType === 'received' ? 'bg-green-100' : 'bg-red-100'
-                                                        }`}>
+                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${transaction.transactionType === 'received' ? 'bg-green-100' : 'bg-red-100'}`}>
                                                         {getTransactionIcon(transaction.transactionType)}
                                                     </div>
                                                     <div>

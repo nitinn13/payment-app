@@ -1,13 +1,41 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { loadRazorpayScript } from '../utils/razorpay-utils'
+import { loadRazorpayScript } from '../utils/razorpay-utils';
 
+// Define the interface directly in the file if not imported
 interface TopUpProps {
   onTopUpSuccess: () => void;
 }
 
+interface RazorpayOptions {
+  key: string | undefined;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: RazorpayResponse) => Promise<void>;
+  prefill?: Record<string, string>;
+  notes?: Record<string, string>;
+  theme?: {
+    color: string;
+  };
+}
+
+interface RazorpayResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayError {
+  error: {
+    description: string;
+  };
+}
+
 const TopUp: React.FC<TopUpProps> = ({ onTopUpSuccess }) => {
-  const [amount, setAmount] = useState<number>(100); // Default ₹100
+  const [amount, setAmount] = useState<number>(100);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
@@ -15,74 +43,12 @@ const TopUp: React.FC<TopUpProps> = ({ onTopUpSuccess }) => {
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
-    if (!isNaN(value) && value >= 10) { // Minimum ₹10 as per your API
+    if (!isNaN(value) && value >= 10) {
       setAmount(value);
     }
   };
 
-  const handleTopUp = async () => {
-    setLoading(true);
-    setError(null);
-    setSuccess(false);
-
-    try {
-      // 1. Create Razorpay order
-      const orderResponse = await axios.post('https://payment-app-backend-dulq.onrender.com/transaction/create-razorpay-order', { amount }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      const { orderId, transactionId: txId } = orderResponse.data;
-      setTransactionId(txId);
-
-      // 2. Load Razorpay script if not already loaded
-      await loadRazorpayScript();
-
-      // 3. Open Razorpay checkout
-      const options = {
-        key: process.env.RAZORPAY_KEY_ID,
-        amount: amount * 100,
-        currency: 'INR',
-        name: 'Your Wallet TopUp',
-        description: 'Wallet TopUp',
-        order_id: orderId,
-        handler: async (response: any) => {
-          // Handle payment success
-          try {
-            await verifyPayment(response, txId);
-          } catch (err) {
-            setError('Payment verification failed');
-            console.error(err);
-          }
-        },
-        prefill: {
-          // You can prefill customer details if available
-        },
-        notes: {
-          transactionId: txId
-        },
-        theme: {
-          color: '#3399cc'
-        }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
-
-      rzp.on('payment.failed', (response: any) => {
-        setError(`Payment failed: ${response.error.description}`);
-        setLoading(false);
-      });
-
-    } catch (err) {
-      setError('Failed to create payment order');
-      console.error(err);
-      setLoading(false);
-    }
-  };
-
-  const verifyPayment = async (response: any, txId: string) => {
+  const verifyPayment = async (response: RazorpayResponse, txId: string) => {
     try {
       await axios.post('/transactions/verify-razorpay-payment', {
         paymentId: response.razorpay_payment_id,
@@ -97,11 +63,67 @@ const TopUp: React.FC<TopUpProps> = ({ onTopUpSuccess }) => {
       });
 
       setSuccess(true);
-      onTopUpSuccess(); // Notify parent component
+      onTopUpSuccess();
     } catch (err) {
       setError('Payment verification failed');
       console.error(err);
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTopUp = async () => {
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
+    try {
+      const orderResponse = await axios.post(
+        'https://payment-app-backend-dulq.onrender.com/transaction/create-razorpay-order', 
+        { amount }, 
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+
+      const { orderId, transactionId: txId } = orderResponse.data;
+      setTransactionId(txId);
+
+      await loadRazorpayScript();
+
+      const options: RazorpayOptions = {
+        key: process.env.RAZORPAY_KEY_ID,
+        amount: amount * 100,
+        currency: 'INR',
+        name: 'Your Wallet TopUp',
+        description: 'Wallet TopUp',
+        order_id: orderId,
+        handler: async (response: RazorpayResponse) => {
+          try {
+            await verifyPayment(response, txId);
+          } catch (err) {
+            setError('Payment verification failed');
+            console.error(err);
+          }
+        },
+        theme: {
+          color: '#3399cc'
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+
+      rzp.on('payment.failed', (response: RazorpayError) => {
+        setError(`Payment failed: ${response.error.description}`);
+        setLoading(false);
+      });
+
+    } catch (err) {
+      setError('Failed to create payment order');
+      console.error(err);
       setLoading(false);
     }
   };

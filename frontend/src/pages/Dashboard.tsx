@@ -1,18 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Bell, Settings, Download, Plus, Send, Smartphone, Zap, TrendingUp, Search, ChevronRight, User, Clock, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { Eye, EyeOff, Plus, Send, Smartphone, Zap, AlertCircle, TrendingUp, Search, ChevronRight, User, Clock, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getUsers, getTransactions, getBalance, getMyDetails } from '../api/api'; 
 import Header from '../components/Header';
 
+// Define types for your data
+interface User {
+  id: string;
+  name: string;
+  upiId: string;
+  status?: 'online' | 'offline';
+  avatar?: string;
+}
+
+interface Transaction {
+  id: string;
+  transactionType: 'sent' | 'received';
+  receiverUpiId: string;
+  senderUpiId: string;
+  amount: number;
+  category: string;
+  createdAt: string;
+}
+
+interface UserDetails {
+  name: string;
+  email?: string;
+  upiId?: string;
+  // Add other user details properties as needed
+}
+
+interface QuickAction {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  desc: string;
+  color: string;
+  bgColor: string;
+  link: string;
+}
 
 const Dashboard = () => {
- const [users, setUsers] = useState([]);
-  const [me, setMe] = useState({});
+  const [users, setUsers] = useState<User[]>([]);
+  const [me, setMe] = useState<UserDetails>({ name: '' });
   const [searchTerm, setSearchTerm] = useState('');
   const [balance, setBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [balanceVisible, setBalanceVisible] = useState(false);
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [error, setError] = useState<string | null>(null); 
   const navigate = useNavigate();
 
@@ -22,23 +56,23 @@ const Dashboard = () => {
       setError(null); 
 
       try {
-        const usersData = await getUsers();
-        setUsers(usersData);
+        const [usersData, balanceData, myDetailsData, transactionsData] = await Promise.all([
+          getUsers(),
+          getBalance(),
+          getMyDetails(),
+          getTransactions()
+        ]);
 
-        const balanceData = await getBalance();
-        setBalance(balanceData);
-
-        const myDetailsData = await getMyDetails();
-        setMe(myDetailsData);
-
-        const transactionsData = await getTransactions();
-        setTransactions(transactionsData);
+        setUsers(usersData as User[]);
+        setBalance(balanceData as number);
+        setMe(myDetailsData as UserDetails);
+        setTransactions(transactionsData as Transaction[]);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch dashboard data');
         console.error(err);
         setUsers([]);
         setBalance(0);
-        setMe({});
+        setMe({ name: '' });
         setTransactions([]);
       } finally {
         setIsLoading(false);
@@ -47,6 +81,23 @@ const Dashboard = () => {
 
     fetchData();
   }, []);
+
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.upiId.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // const handleLogout = () => {
+  //   localStorage.removeItem('token');
+  //   navigate('/login');
+  // };
+
+  const quickActions: QuickAction[] = [
+    { icon: Send, title: 'Send Money', desc: 'Transfer funds instantly', color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-50', link: '/send' },
+    { icon: Smartphone, title: 'Mobile Recharge', desc: 'Top-up your phone', color: 'from-green-500 to-green-600', bgColor: 'bg-green-50', link: '/dashboard' },
+    { icon: Zap, title: 'Pay Bills', desc: 'Electricity, gas & more', color: 'from-yellow-500 to-yellow-600', bgColor: 'bg-yellow-50', link: '/dashboard'},
+    { icon: TrendingUp, title: 'Investments', desc: 'Grow your money', color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-50', link: '/dashboard' },
+  ];
 
   if (isLoading) {
     return (
@@ -112,126 +163,36 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-
-          {/* Skeleton Content */}
-          <div className="space-y-8 opacity-50">
-            {/* Balance Card Skeleton */}
-            <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 rounded-2xl p-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-              <div className="relative z-10 space-y-4">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <div className="w-32 h-4 bg-white/30 rounded animate-pulse"></div>
-                    <div className="w-24 h-3 bg-white/20 rounded animate-pulse"></div>
-                  </div>
-                  <div className="w-12 h-8 bg-white/20 rounded animate-pulse"></div>
-                </div>
-                <div className="flex justify-between items-end">
-                  <div className="space-y-2">
-                    <div className="w-40 h-8 bg-white/40 rounded animate-pulse"></div>
-                    <div className="w-28 h-3 bg-white/20 rounded animate-pulse"></div>
-                  </div>
-                  <div className="w-24 h-16 bg-white/20 rounded-lg animate-pulse"></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions Skeleton */}
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <div className="w-32 h-6 bg-gray-300 rounded animate-pulse"></div>
-                <div className="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="bg-white rounded-xl p-6 border border-gray-200 space-y-4">
-                    <div className="w-12 h-12 bg-gray-200 rounded-xl animate-pulse"></div>
-                    <div className="space-y-2">
-                      <div className="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
-                      <div className="w-16 h-3 bg-gray-200 rounded animate-pulse"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Content Grid Skeleton */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Transactions Skeleton */}
-              <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200">
-                <div className="p-6 border-b border-gray-100 space-y-2">
-                  <div className="w-40 h-6 bg-gray-200 rounded animate-pulse"></div>
-                  <div className="w-56 h-4 bg-gray-200 rounded animate-pulse"></div>
-                </div>
-                <div className="divide-y divide-gray-100">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="p-6 flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>
-                        <div className="space-y-2">
-                          <div className="w-32 h-4 bg-gray-200 rounded animate-pulse"></div>
-                          <div className="w-24 h-3 bg-gray-200 rounded animate-pulse"></div>
-                        </div>
-                      </div>
-                      <div className="w-16 h-5 bg-gray-200 rounded animate-pulse"></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quick Send Skeleton */}
-              <div className="bg-white rounded-2xl border border-gray-200">
-                <div className="p-6 border-b border-gray-100 space-y-2">
-                  <div className="w-24 h-6 bg-gray-200 rounded animate-pulse"></div>
-                  <div className="w-40 h-4 bg-gray-200 rounded animate-pulse"></div>
-                </div>
-                <div className="p-6 space-y-6">
-                  <div className="w-full h-12 bg-gray-100 rounded-xl animate-pulse"></div>
-                  <div className="space-y-2">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center space-x-3 p-3">
-                        <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>
-                        <div className="flex-1 space-y-2">
-                          <div className="w-24 h-4 bg-gray-200 rounded animate-pulse"></div>
-                          <div className="w-32 h-3 bg-gray-200 rounded animate-pulse"></div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </main>
       </div>
     );
   }
 
   if (error) {
-    return <p>Error loading data: {error}</p>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-lg">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-8 h-8 text-red-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.upiId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
-
-  const quickActions = [
-    { icon: Send, title: 'Send Money', desc: 'Transfer funds instantly', color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-50', link: '/send' },
-    { icon: Smartphone, title: 'Mobile Recharge', desc: 'Top-up your phone', color: 'from-green-500 to-green-600', bgColor: 'bg-green-50', link: '/dashboard' },
-    { icon: Zap, title: 'Pay Bills', desc: 'Electricity, gas & more', color: 'from-yellow-500 to-yellow-600', bgColor: 'bg-yellow-50',  link: '/dashboard'},
-    { icon: TrendingUp, title: 'Investments', desc: 'Grow your money', color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-50',  link: '/dashboard' },
-  ];
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
       <Header/>
-
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section & Balance */}
@@ -270,7 +231,10 @@ const Dashboard = () => {
                   <p className="text-purple-200 text-sm mt-1">Available to spend</p>
                   <button
                     onClick={() => navigate('/topup')}
-                  >Top Up</button>
+                    className="mt-2 text-sm font-medium text-white bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Top Up
+                  </button>
                 </div>
                 
                 <div className="text-right">
@@ -298,9 +262,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {quickActions.map((action, index) => (
               <button
-              onClick={() =>{
-                navigate(`${action.link}`);
-              }}
+                onClick={() => navigate(action.link)}
                 key={index}
                 className={`${action.bgColor} hover:bg-opacity-80 rounded-xl p-6 border border-gray-100 hover:border-gray-200 transition-all duration-200 transform hover:scale-105 hover:shadow-lg group`}
               >
@@ -325,8 +287,9 @@ const Dashboard = () => {
                     <p className="text-sm text-gray-500 mt-1">Your latest financial activity</p>
                   </div>
                   <button 
-                  onClick={() => navigate('/transactions')}
-                  className="text-purple-600 hover:text-purple-700 font-medium text-sm flex items-center space-x-1">
+                    onClick={() => navigate('/transactions')}
+                    className="text-purple-600 hover:text-purple-700 font-medium text-sm flex items-center space-x-1"
+                  >
                     <span>View All</span>
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -335,7 +298,11 @@ const Dashboard = () => {
 
               <div className="divide-y divide-gray-100">
                 {transactions.slice(0, 3).map((transaction) => (
-                  <div key={transaction.id} className="p-6 hover:bg-gray-50 transition-colors cursor-pointer">
+                  <div 
+                    key={transaction.id} 
+                    className="p-6 hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/transactions/my-transactions/${transaction.id}`)}
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
@@ -358,7 +325,7 @@ const Dashboard = () => {
                             <span className="text-gray-300">•</span>
                             <p className="text-sm text-gray-500 flex items-center">
                               <Clock className="w-3 h-3 mr-1" />
-                              {transaction.createdAt}
+                              {new Date(transaction.createdAt).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
@@ -400,37 +367,34 @@ const Dashboard = () => {
 
                 {/* Users List */}
                 <div className="space-y-2 max-h-80 overflow-y-auto">
-                  {isLoading ? (
-                    <div className="text-center py-8">
-                      <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                      <p className="text-gray-500 mt-2 text-sm">Loading contacts...</p>
-                    </div>
-                  ) : (
-                    filteredUsers.slice(0, 6).map((user) => (
-                      <button
-                        key={user.id}
-                        className="w-full flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-xl transition-colors text-left group"
-                      >
-                        <div className="relative">
-                          <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                            {user.avatar || <User className="w-6 h-6" />}
-                          </div>
-                          <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                            user.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
-                          }`}></div>
+                  {filteredUsers.slice(0, 6).map((user) => (
+                    <button
+                      key={user.id}
+                      className="w-full flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-xl transition-colors text-left group"
+                      onClick={() => navigate(`/send?upiId=${user.upiId}`)}
+                    >
+                      <div className="relative">
+                        <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                          {user.avatar || <User className="w-6 h-6" />}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-gray-900 truncate">{user.name}</p>
-                          <p className="text-sm text-gray-500 truncate">{user.upiId}</p>
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
-                      </button>
-                    ))
-                  )}
+                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                          user.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
+                        }`}></div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{user.name}</p>
+                        <p className="text-sm text-gray-500 truncate">{user.upiId}</p>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
+                    </button>
+                  ))}
                 </div>
 
                 {filteredUsers.length > 6 && (
-                  <button className="w-full mt-4 py-2 text-purple-600 hover:text-purple-700 font-medium text-sm border border-purple-200 hover:border-purple-300 rounded-lg transition-colors">
+                  <button 
+                    className="w-full mt-4 py-2 text-purple-600 hover:text-purple-700 font-medium text-sm border border-purple-200 hover:border-purple-300 rounded-lg transition-colors"
+                    onClick={() => navigate('/contacts')}
+                  >
                     View All Contacts ({filteredUsers.length})
                   </button>
                 )}

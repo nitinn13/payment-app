@@ -1,18 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Send, User, DollarSign, CheckCircle, AlertCircle, Loader, Shield, Clock, CreditCard } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowLeft, Send, User, DollarSign, CheckCircle, AlertCircle, Loader, Shield, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getBalance, getTransactions } from '../api/api';
+
+interface Transaction {
+  id: string;
+  receiverUpiId: string;
+  amount: number;
+  receiverId?: string;
+  [key: string]: any;
+}
+
 
 const SendMoney = () => {
   const [upiId, setUpiId] = useState("");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [balance, setBalance] = useState(0);
-  const [transactions, setTransactions] = useState([]);
-  const [transactionId, setTransactionId] = useState(""); 
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactionId, setTransactionId] = useState("");
   const navigate = useNavigate();
 
   const quickAmounts = [50, 100, 200, 500, 1000];
@@ -23,7 +32,7 @@ const SendMoney = () => {
         const balanceData = await getBalance();
         setBalance(balanceData);
         const transactionsData = await getTransactions();
-        setTransactions(transactionsData);
+        setTransactions(transactionsData as Transaction[]);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch dashboard data');
         console.error(err);
@@ -64,7 +73,7 @@ const SendMoney = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem('token') || ''}`
         },
         body: JSON.stringify({
           receiverUpiId: upiId,
@@ -73,11 +82,12 @@ const SendMoney = () => {
       });
 
       const data = await response.json();
-      
+
       if (response.ok) {
         setTransactionId(data.transactionId); // Store the transaction ID from response
         setSuccess(`Successfully sent $${amount} to ${upiId}`);
-        
+        setStep(3);
+
         // Redirect to transaction details after 2 seconds
         setTimeout(() => {
           navigate(`/transactions/my-transactions/${data.transactionId}`);
@@ -93,18 +103,21 @@ const SendMoney = () => {
         const demoTransactionId = `TXN${Date.now().toString().slice(-8)}`;
         setTransactionId(demoTransactionId);
         setSuccess(`Successfully sent $${amount} to ${upiId}`);
-        navigate(`/transactions/my-transactions/${demoTransactionId}`);
+        setStep(3);
+        setTimeout(() => {
+          navigate(`/transactions/my-transactions/${demoTransactionId}`);
+        }, 2000);
       }, 2000);
     }
-    
+
     setIsLoading(false);
   };
 
-  const handleContactSelect = (contact) => {
-    setUpiId(contact.upiId);
+  const handleContactSelect = (contact: Transaction) => {
+    setUpiId(contact.receiverUpiId);
   };
 
-  const handleQuickAmount = (quickAmount) => {
+  const handleQuickAmount = (quickAmount: number) => {
     setAmount(quickAmount.toString());
   };
 
@@ -123,7 +136,7 @@ const SendMoney = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <button 
+              <button
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 onClick={() => navigate(-1)}
               >
@@ -363,7 +376,7 @@ const SendMoney = () => {
                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
                   <CheckCircle className="w-10 h-10 text-green-600" />
                 </div>
-                
+
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">Transfer Successful!</h2>
                   <p className="text-gray-600">{success}</p>
@@ -398,7 +411,7 @@ const SendMoney = () => {
                   >
                     Send Another
                   </button>
-                  <button 
+                  <button
                     onClick={() => navigate(`/transactions/my-transactions/${transactionId}`)}
                     className="flex-1 py-3 px-6 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
                   >

@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, User, Search, Phone, Mail, Shield, UserPlus, Send, AlertCircle, Users } from 'lucide-react';
+import { ArrowLeft, Search, Shield, UserPlus, Send, AlertCircle, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+interface Contact {
+  id?: string;
+  name: string;
+  upiId?: string;
+  verified?: boolean;
+  [key: string]: any; // For any additional properties
+}
+
 const Contacts = () => {
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [contacts, setContacts] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    const [contacts, setContacts] = useState<Contact[]>([]);
+    const [searchTerm, setSearchTerm] = useState<string>('');
 
     const navigate = useNavigate();
 
@@ -19,7 +27,7 @@ const Contacts = () => {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                        Authorization: `Bearer ${localStorage.getItem('token') || ''}`
                     }
                 });
                 
@@ -30,7 +38,7 @@ const Contacts = () => {
                 const result = await response.json();
                 
                 // Handle different possible response structures
-                const contactsData = result.contacts || result.users || result.data || [];
+                const contactsData: Contact[] = result.contacts || result.users || result.data || [];
                 setContacts(contactsData);
                 setLoading(false);
                 
@@ -49,7 +57,7 @@ const Contacts = () => {
         (contact.upiId && contact.upiId.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    const getInitials = (name) => {
+    const getInitials = (name: string): string => {
         return name.charAt(0).toUpperCase();
     };
 
@@ -241,7 +249,6 @@ const Contacts = () => {
                                             >
                                                 <Send className="w-5 h-5" />
                                             </button>
-                                            
                                         </div>
                                     </div>
                                 </div>

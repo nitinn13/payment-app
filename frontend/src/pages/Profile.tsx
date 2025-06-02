@@ -1,32 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { User, Mail, AtSign, Calendar, Edit3, Camera, Settings } from 'lucide-react';
 
+interface UserData {
+    name?: string;
+    username?: string;
+    email?: string;
+    upiId?: string;
+    createdAt?: string;
+    [key: string]: any; // For any additional properties that might exist
+}
+
 const Profile = () => {
-    const [data, setData] = useState({});
+    const [data, setData] = useState<UserData>({});
     const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
-        
-        
         const getData = async () => {
-            const response = await fetch('https://payment-app-backend-dulq.onrender.com/user/me',
-                {
+            try {
+                const response = await fetch('https://payment-app-backend-dulq.onrender.com/user/me', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                        Authorization: `Bearer ${localStorage.getItem('token') || ''}`
                     }
+                });
+                const responseData = await response.json();
+                console.log(responseData);
+                if (responseData.user) {
+                    setData(responseData.user);
                 }
-            )
-            const responseData = await response.json()
-            console.log(responseData)
-            setData(responseData.user)
-        }
-        getData()
-        
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        };
+        getData();
     }, []);
 
-    const formatDate = (dateString) => {
+    const formatDate = (dateString?: string): string => {
         if (!dateString) return '';
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', { 
@@ -36,7 +46,7 @@ const Profile = () => {
         });
     };
 
-    const getInitials = (name) => {
+    const getInitials = (name?: string): string => {
         if (!name) return 'U';
         return name.split(' ').map(n => n[0]).join('').toUpperCase();
     };

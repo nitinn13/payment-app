@@ -1,21 +1,21 @@
 import React, { useState, useRef } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Signup = () => {
-  const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+const Signup: React.FC = () => {
+  const [name, setName] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  const usernameInputRef = useRef(null);
-  const emailInputRef = useRef(null);
-  const passwordInputRef = useRef(null);
-  const signupButtonRef = useRef(null);
+  const usernameInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const signupButtonRef = useRef<HTMLButtonElement>(null);
 
-  const handleSignup = async () => {
+  const handleSignup = async (): Promise<void> => {
     setIsLoading(true);
     try {
       const response = await axios.post('https://payment-app-backend-dulq.onrender.com/user/signup', {
@@ -27,32 +27,34 @@ const Signup = () => {
       localStorage.setItem('token', response.data.token);
       navigate('/dashboard');
     } catch (error) {
-      console.error('Signup failed:', error);
+      const axiosError = error as AxiosError;
+      console.error('Signup failed:', axiosError);
       alert('Signup failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
-  const handleNameKeyDown = (event) => {
-    if (event.key === 'Enter') {
+  const handleNameKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === 'Enter' && usernameInputRef.current) {
       usernameInputRef.current.focus();
     }
   };
 
-  const handleUsernameKeyDown = (event) => {
-    if (event.key === 'Enter') {
+  const handleUsernameKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === 'Enter' && emailInputRef.current) {
       emailInputRef.current.focus();
     }
   };
 
-  const handleEmailKeyDown = (event) => {
-    if (event.key === 'Enter') {
+  const handleEmailKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === 'Enter' && passwordInputRef.current) {
       passwordInputRef.current.focus();
     }
   };
 
-  const handlePasswordKeyDown = (event) => {
-    if (event.key === 'Enter') {
+  const handlePasswordKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === 'Enter' && signupButtonRef.current) {
       signupButtonRef.current.click();
     }
   };
@@ -66,9 +68,12 @@ const Signup = () => {
 
       {/* Header */}
       <nav className="flex justify-between items-center px-8 py-6">
-        <button onClick={() => navigate('/')}
-          className="text-2xl font-bold text-purple-600">PayFlow</button>
-
+        <button 
+          onClick={() => navigate('/')}
+          className="text-2xl font-bold text-purple-600"
+        >
+          PayFlow
+        </button>
       </nav>
 
       {/* Main Content */}
@@ -91,7 +96,7 @@ const Signup = () => {
                   <label className="text-sm font-medium text-gray-700 block">Full Name</label>
                   <div className="relative">
                     <input
-                      onChange={e => setName(e.target.value)}
+                      onChange={(e) => setName(e.target.value)}
                       type="text"
                       value={name}
                       placeholder="Enter your full name"
@@ -106,7 +111,7 @@ const Signup = () => {
                   <label className="text-sm font-medium text-gray-700 block">Username</label>
                   <div className="relative">
                     <input
-                      onChange={e => setUsername(e.target.value)}
+                      onChange={(e) => setUsername(e.target.value)}
                       type="text"
                       value={username}
                       placeholder="Choose a username"
@@ -122,7 +127,7 @@ const Signup = () => {
                   <label className="text-sm font-medium text-gray-700 block">Email Address</label>
                   <div className="relative">
                     <input
-                      onChange={e => setEmail(e.target.value)}
+                      onChange={(e) => setEmail(e.target.value)}
                       type="email"
                       value={email}
                       placeholder="Enter your email"
@@ -138,7 +143,7 @@ const Signup = () => {
                   <label className="text-sm font-medium text-gray-700 block">Password</label>
                   <div className="relative">
                     <input
-                      onChange={e => setPassword(e.target.value)}
+                      onChange={(e) => setPassword(e.target.value)}
                       type="password"
                       value={password}
                       placeholder="Create a strong password"
@@ -152,7 +157,7 @@ const Signup = () => {
                 {/* Signup Button */}
                 <button
                   onClick={handleSignup}
-                  disabled={isLoading}
+                  disabled={isLoading || !name || !username || !email || !password}
                   className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                   ref={signupButtonRef}
                 >
@@ -172,7 +177,8 @@ const Signup = () => {
                     Already have an account?
                     <button
                       onClick={() => navigate('/login')}
-                      className="text-purple-600 hover:text-purple-700 font-medium ml-1 transition-colors">
+                      className="text-purple-600 hover:text-purple-700 font-medium ml-1 transition-colors"
+                    >
                       Sign in
                     </button>
                   </p>
@@ -191,7 +197,6 @@ const Signup = () => {
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span>Instant Transfers</span>
             </div>
-
           </div>
         </div>
       </div>

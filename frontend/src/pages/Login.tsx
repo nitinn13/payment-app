@@ -1,21 +1,26 @@
 import React, { useState, useRef } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({ email: '', password: '' });
+interface LoginErrors {
+  email: string;
+  password: string;
+}
+
+const Login: React.FC = () => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [errors, setErrors] = useState<LoginErrors>({ email: '', password: '' });
   const navigate = useNavigate();
 
-  const passwordInputRef = useRef(null);
-  const loginButtonRef = useRef(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const loginButtonRef = useRef<HTMLButtonElement>(null);
 
-  const handleLogin = async () => {
+  const handleLogin = async (): Promise<void> => {
     setIsLoading(true);
-    setErrors({ email: '', password: '' }); // Clear previous errors
+    setErrors({ email: '', password: '' });
     
     try {
       const response = await axios.post('https://payment-app-backend-dulq.onrender.com/user/login', {
@@ -25,8 +30,10 @@ const Login = () => {
       localStorage.setItem('token', response.data.token);
       navigate("/dashboard");
     } catch (error) {
-      console.error('Login failed:', error);
-      if (error.response && error.response.status === 401) {
+      const axiosError = error as AxiosError;
+      console.error('Login failed:', axiosError);
+      
+      if (axiosError.response?.status === 401) {
         setErrors({
           email: 'Invalid email or password',
           password: 'Invalid email or password'
@@ -37,24 +44,25 @@ const Login = () => {
           password: 'Login failed. Please try again.'
         });
       }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
-  const handleDemoLogin = () => {
+  const handleDemoLogin = (): void => {
     setEmail("nitin@gmail.com");
     setPassword("pass");
-    setErrors({ email: '', password: '' }); // Clear errors when using demo
+    setErrors({ email: '', password: '' });
   };
 
-  const handleEmailKeyDown = (event) => {
-    if (event.key === 'Enter') {
+  const handleEmailKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === 'Enter' && passwordInputRef.current) {
       passwordInputRef.current.focus();
     }
   };
 
-  const handlePasswordKeyDown = (event) => {
-    if (event.key === 'Enter') {
+  const handlePasswordKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === 'Enter' && loginButtonRef.current) {
       loginButtonRef.current.click();
     }
   };
@@ -70,7 +78,10 @@ const Login = () => {
       <nav className="flex justify-between items-center px-8 py-6">
         <button
           onClick={() => navigate('/')}
-          className="text-2xl font-bold text-purple-600">PayFlow</button>
+          className="text-2xl font-bold text-purple-600"
+        >
+          PayFlow
+        </button>
       </nav>
 
       {/* Main Content */}
@@ -78,7 +89,6 @@ const Login = () => {
         <div className="w-full max-w-md">
           {/* Login Card */}
           <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 p-8 relative">
-            {/* Card glow effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-3xl blur-xl"></div>
 
             <div className="relative z-10">
@@ -93,9 +103,9 @@ const Login = () => {
                   <label className="text-sm font-medium text-gray-700 block">Email Address</label>
                   <div className="relative">
                     <input
-                      onChange={e => {
+                      onChange={(e) => {
                         setEmail(e.target.value);
-                        setErrors({ ...errors, email: '' }); // Clear error when typing
+                        setErrors({ ...errors, email: '' });
                       }}
                       type="email"
                       value={email}
@@ -103,7 +113,6 @@ const Login = () => {
                       className={`w-full px-4 py-3 rounded-xl border ${errors.email ? 'border-red-400' : 'border-gray-200'} focus:border-purple-400 focus:ring-4 focus:ring-purple-100 outline-none transition-all duration-200 bg-white/50 backdrop-blur-sm`}
                       onKeyDown={handleEmailKeyDown}
                     />
-                    {/* Email icon */}
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
@@ -125,9 +134,9 @@ const Login = () => {
                   <label className="text-sm font-medium text-gray-700 block">Password</label>
                   <div className="relative">
                     <input
-                      onChange={e => {
+                      onChange={(e) => {
                         setPassword(e.target.value);
-                        setErrors({ ...errors, password: '' }); // Clear error when typing
+                        setErrors({ ...errors, password: '' });
                       }}
                       type={showPassword ? "text" : "password"}
                       value={password}
@@ -136,7 +145,6 @@ const Login = () => {
                       onKeyDown={handlePasswordKeyDown}
                       ref={passwordInputRef}
                     />
-                    {/* Password toggle button */}
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
@@ -240,7 +248,8 @@ const Login = () => {
                     Don't have an account?
                     <button
                       onClick={() => navigate('/signup')}
-                      className="text-purple-600 hover:text-purple-700 font-medium ml-1 transition-colors">
+                      className="text-purple-600 hover:text-purple-700 font-medium ml-1 transition-colors"
+                    >
                       Sign up
                     </button>
                   </p>

@@ -1,30 +1,51 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, Clock, AlertCircle, Copy, Download, Share2, Receipt, ArrowUpRight, ArrowDownLeft, Calendar, User, CreditCard, Shield, ExternalLink } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Copy, Download, Share2, Receipt, ArrowUpRight, ArrowDownLeft, Calendar, User, Shield, ExternalLink } from 'lucide-react';
+
+interface MerchantInfo {
+    verified?: boolean;
+    name?: string;
+}
+
+interface Transaction {
+    id: string;
+    amount: number;
+    type: 'CREDIT' | 'DEBIT';
+    description: string;
+    status: string;
+    paymentMethod: string;
+    bankReference?: string;
+    razorpayId?: string;
+    senderUpiId: string;
+    receiverUpiId: string;
+    merchantInfo?: MerchantInfo;
+    fee: number;
+    tax: number;
+    createdAt: string;
+    updatedAt: string;
+    [key: string]: any; // For any additional properties that might exist
+}
 
 const TransactionDetailsPage = () => {
-    // Mock transaction ID for demonstration
-    const { id } = useParams();
-    const [transaction, setTransaction] = useState(null);
+    const { id } = useParams<{ id: string }>();
+    const [transaction, setTransaction] = useState<Transaction | null>(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
-    const navigate =useNavigate();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchTransactionDetails = async () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await fetch(`https://payment-app-backend-dulq.onrender.com/transaction/my-transactions/${id}`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${localStorage.getItem('token')}`
-                        }
+                const response = await fetch(`https://payment-app-backend-dulq.onrender.com/transaction/my-transactions/${id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token') || ''}`
                     }
-                );
+                });
                 const data = await response.json();
                 setTransaction(data.transaction);
             } catch (error) {
@@ -41,6 +62,7 @@ const TransactionDetailsPage = () => {
     }, [id]);
 
     const handleCopyTransactionId = async () => {
+        if (!transaction) return;
         try {
             await navigator.clipboard.writeText(transaction.id);
             setCopied(true);
@@ -50,7 +72,7 @@ const TransactionDetailsPage = () => {
         }
     };
 
-    const formatDate = (dateString) => {
+    const formatDate = (dateString: string): string => {
         return new Date(dateString).toLocaleDateString('en-IN', {
             day: '2-digit',
             month: 'short',
@@ -58,7 +80,7 @@ const TransactionDetailsPage = () => {
         });
     };
 
-    const formatTime = (dateString) => {
+    const formatTime = (dateString: string): string => {
         return new Date(dateString).toLocaleTimeString('en-IN', {
             hour: '2-digit',
             minute: '2-digit',
@@ -67,7 +89,7 @@ const TransactionDetailsPage = () => {
         });
     };
 
-    const formatDateTime = (dateString) => {
+    const formatDateTime = (dateString: string) => {
         const date = new Date(dateString);
         return {
             date: formatDate(dateString),
@@ -76,29 +98,29 @@ const TransactionDetailsPage = () => {
         };
     };
 
-    const getStatusConfig = (status) => {
-        const configs = {
-            completed: {
-                icon: CheckCircle,
-                color: 'text-green-600',
-                bgColor: 'bg-green-100',
-                text: 'Completed'
-            },
-            pending: {
-                icon: Clock,
-                color: 'text-yellow-600',
-                bgColor: 'bg-yellow-100',
-                text: 'Pending'
-            },
-            failed: {
-                icon: AlertCircle,
-                color: 'text-red-600',
-                bgColor: 'bg-red-100',
-                text: 'Failed'
-            }
-        };
-        return configs[status] || configs.pending;
-    };
+    // const getStatusConfig = (status: string) => {
+    //     const configs = {
+    //         completed: {
+    //             icon: CheckCircle,
+    //             color: 'text-green-600',
+    //             bgColor: 'bg-green-100',
+    //             text: 'Completed'
+    //         },
+    //         pending: {
+    //             icon: Clock,
+    //             color: 'text-yellow-600',
+    //             bgColor: 'bg-yellow-100',
+    //             text: 'Pending'
+    //         },
+    //         failed: {
+    //             icon: AlertCircle,
+    //             color: 'text-red-600',
+    //             bgColor: 'bg-red-100',
+    //             text: 'Failed'
+    //         }
+    //     };
+    //     return configs[status as keyof typeof configs] || configs.pending;
+    // };
 
     if (loading) {
         return (
@@ -174,9 +196,8 @@ const TransactionDetailsPage = () => {
         );
     }
 
-
     const createdDateTime = formatDateTime(transaction.createdAt);
-    const updatedDateTime = formatDateTime(transaction.updatedAt);
+    // const updatedDateTime = formatDateTime(transaction.updatedAt);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -223,8 +244,7 @@ const TransactionDetailsPage = () => {
                                         <h2 className="text-2xl font-bold text-gray-900">
                                             {transaction.type === 'CREDIT' ? '+' : '-'}₹{transaction.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                         </h2>
-                                        <div className={`flex items-center space-x-2 px-3 py-1 rounded-full  bg-green-700 `}>
-                                            {/* <StatusIcon className={`w-4 h-4 `} /> */}
+                                        <div className={`flex items-center space-x-2 px-3 py-1 rounded-full bg-green-700`}>
                                             <span className={`text-sm font-semibold text-white`}>
                                                 Successful
                                             </span>
@@ -363,7 +383,6 @@ const TransactionDetailsPage = () => {
                                         )}
                                         <div className="border-t pt-3 flex justify-between">
                                             <span className="text-sm font-semibold text-gray-900">Net Amount</span>
-                                            {/* <span className="text-sm font-bold text-gray-900">₹{transaction.netAmount.toFixed(2)}</span> */}
                                         </div>
                                     </div>
                                 </div>
@@ -384,7 +403,6 @@ const TransactionDetailsPage = () => {
                                         </div>
                                     </div>
                                 </div>
-                              
                             </div>
                         </div>
                     </div>

@@ -18,7 +18,6 @@ export const loadRazorpayScript = (): Promise<void> => {
   });
 };
 
-// Optional: Add Razorpay types if needed
 declare global {
   interface Window {
     Razorpay: any;

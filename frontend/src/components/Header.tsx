@@ -1,73 +1,100 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, Settings, User, LogOut, ChevronDown, Search, Menu, X, Home, CreditCard, TrendingUp, Users, HelpCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Bell, Settings, User, LogOut, ChevronDown, Search, Menu, X, Home, CreditCard, Users, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const Header = ({
-    currentPage = "Dashboard",
-    notificationCount = 3,
-    showSearch = true,
-    showMobileMenu = false,
-    onMobileMenuToggle = () => {}
+interface HeaderProps {
+  currentPage?: string;
+  notificationCount?: number;
+  showSearch?: boolean;
+  showMobileMenu?: boolean;
+  onMobileMenuToggle?: () => void;
+}
+
+interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  time: string;
+  type: 'success' | 'sent' | 'info';
+}
+
+interface NavItem {
+  name: string;
+  icon: React.ComponentType<{ size: number }>;
+  href: string;
+}
+
+interface UserData {
+  name?: string;
+  email?: string;
+  [key: string]: any;
+}
+
+const Header: React.FC<HeaderProps> = ({
+  currentPage = "Dashboard",
+  notificationCount = 3,
+  showSearch = true,
+  showMobileMenu = false,
+  onMobileMenuToggle = () => {}
 }) => {
-    const navigate = useNavigate();
-    const [data, setData] = useState({});
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
-    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+  const [data, setData] = useState<UserData>({});
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-    const notifications = [
-        { id: 1, title: "Payment received", message: "₹567.00 from 0e4aea90-dc12", time: "2 min ago", type: "success" },
-        { id: 2, title: "Payment sent", message: "₹100.00 to soham@upi", time: "5 min ago", type: "sent" },
-        { id: 3, title: "New feature available", message: "Try our new investment tools", time: "1 hour ago", type: "info" }
-    ];
+  const notifications: Notification[] = [
+    { id: 1, title: "Payment received", message: "₹567.00 from 0e4aea90-dc12", time: "2 min ago", type: "success" },
+    { id: 2, title: "Payment sent", message: "₹100.00 to soham@upi", time: "5 min ago", type: "sent" },
+    { id: 3, title: "New feature available", message: "Try our new investment tools", time: "1 hour ago", type: "info" }
+  ];
 
-    const navItems = [
-        { name: 'Dashboard', icon: Home, href: '/dashboard' },
-        { name: 'Transactions', icon: CreditCard, href: '/transactions' },
-        { name: 'Contacts', icon: Users, href: '/contacts' },
-    ];
-    const onLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/login');
-    }
+  const navItems: NavItem[] = [
+    { name: 'Dashboard', icon: Home, href: '/dashboard' },
+    { name: 'Transactions', icon: CreditCard, href: '/transactions' },
+    { name: 'Contacts', icon: Users, href: '/contacts' },
+  ];
 
-    const getInitials = (name) => {
-        return name?.split(' ').map(n => n[0]).join('').toUpperCase();
-    };
+  const onLogout = useCallback(() => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  }, [navigate]);
 
-    useEffect(() => {
-        const getData = async () => {
-            try {
-                const response = await fetch('https://payment-app-backend-dulq.onrender.com/user/me',
-                    {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${localStorage.getItem('token')}`
-                        }
-                    }
-                );
-                if (!response.ok) {
-                    // Handle error cases, e.g., redirect to login if unauthorized
-                    console.error('Failed to fetch user data:', response.status);
-                    if (response.status === 401) {
-                        onLogout();
-                    }
-                    return;
-                }
-                const responseData = await response.json();
-                console.log(responseData);
-                setData(responseData.user);
-            } catch (error) {
-                console.error('Error fetching user data:', error);
+  const getInitials = (name?: string) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const response = await fetch('https://payment-app-backend-dulq.onrender.com/user/me',
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('token') || ''}`
             }
+          }
+        );
+        if (!response.ok) {
+          console.error('Failed to fetch user data:', response.status);
+          if (response.status === 401) {
+            onLogout();
+          }
+          return;
         }
-        getData();
-    }, [onLogout]);
+        const responseData = await response.json();
+        setData(responseData.user || {});
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    getData();
+  }, [onLogout]);
 
-    const userName = data?.name;
-    const userEmail = data?.email;
-
+  const userName = data?.name;
+  const userEmail = data?.email;
     return (
         <>
             <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
